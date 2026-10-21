@@ -1,3 +1,4 @@
+# Header-only StickS3 PMIC support.
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
