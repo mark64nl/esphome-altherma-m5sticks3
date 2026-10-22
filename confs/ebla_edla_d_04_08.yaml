@@ -104,3 +104,228 @@ sensor:
     unit_of_measurement: "L/min"
     state_class: measurement
     accuracy_decimals: 1
+
+  # ==========================================================
+  # EBLA06 - Koelcircuit en inverter
+  # ==========================================================
+
+  - <<: *temp
+    name: "EBLA Hoge druk"
+    register: 0x20
+    offset: 12
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  - <<: *temp
+    name: "EBLA Hoge druk temperatuur-equivalent"
+    register: 0x20
+    offset: 12
+    convid: 405
+    datasize: 2
+    entity_category: diagnostic
+
+  - <<: *temp
+    name: "EBLA Lage druk"
+    register: 0x20
+    offset: 14
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  - <<: *temp
+    name: "EBLA Lage druk temperatuur-equivalent"
+    register: 0x20
+    offset: 14
+    convid: 405
+    datasize: 2
+    entity_category: diagnostic
+
+  - <<: *altherma_base
+    name: "EBLA Inverter primaire stroom"
+    register: 0x21
+    offset: 0
+    convid: 105
+    datasize: 2
+    unit_of_measurement: "A"
+    state_class: measurement
+    accuracy_decimals: 1
+
+  - <<: *altherma_base
+    name: "EBLA Inverter secundaire stroom"
+    register: 0x21
+    offset: 2
+    convid: 105
+    datasize: 2
+    unit_of_measurement: "A"
+    state_class: measurement
+    accuracy_decimals: 1
+
+  - <<: *temp
+    name: "EBLA Inverter koellichaam"
+    register: 0x21
+    offset: 4
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  - <<: *temp
+    name: "EBLA Ventilator 1 koellichaam"
+    register: 0x21
+    offset: 6
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  - <<: *temp
+    name: "EBLA Ventilator 2 koellichaam"
+    register: 0x21
+    offset: 8
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  - <<: *temp
+    name: "EBLA Compressorpijptemperatuur"
+    register: 0x21
+    offset: 10
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  - <<: *altherma_base
+    name: "EBLA Ventilator 1 snelheid"
+    register: 0x30
+    offset: 1
+    convid: 211
+    datasize: 1
+    state_class: measurement
+
+  - <<: *altherma_base
+    name: "EBLA Ventilator 2 snelheid"
+    register: 0x30
+    offset: 2
+    convid: 211
+    datasize: 1
+    state_class: measurement
+
+  - <<: *altherma_base
+    name: "EBLA Expansieventiel 1"
+    register: 0x30
+    offset: 3
+    convid: 151
+    datasize: 2
+    unit_of_measurement: "pulses"
+    entity_category: diagnostic
+
+  - <<: *altherma_base
+    name: "EBLA Expansieventiel 2"
+    register: 0x30
+    offset: 5
+    convid: 151
+    datasize: 2
+    unit_of_measurement: "pulses"
+    entity_category: diagnostic
+
+  - <<: *altherma_base
+    name: "EBLA Expansieventiel 3"
+    register: 0x30
+    offset: 7
+    convid: 151
+    datasize: 2
+    unit_of_measurement: "pulses"
+    entity_category: diagnostic
+
+  - <<: *altherma_base
+    name: "EBLA Expansieventiel 4"
+    register: 0x30
+    offset: 9
+    convid: 151
+    datasize: 2
+    unit_of_measurement: "pulses"
+    entity_category: diagnostic
+    
+  # ==========================================================
+  # EBLA06 - Watercircuit
+  # ==========================================================
+
+  - <<: *temp
+    name: "EBLA Aanvoer voor backup heater"
+    register: 0x61
+    offset: 2
+    convid: 105
+    datasize: 2
+
+  - <<: *temp
+    name: "EBLA Aanvoer na backup heater"
+    register: 0x61
+    offset: 4
+    convid: 105
+    datasize: 2
+
+  - <<: *temp
+    name: "EBLA Koelmiddel vloeistofzijde"
+    register: 0x61
+    offset: 6
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  - <<: *temp
+    name: "EBLA Waterretour"
+    register: 0x61
+    offset: 8
+    convid: 105
+    datasize: 2
+
+  - <<: *temp
+    name: "EBLA Boilerwatertemperatuur"
+    register: 0x61
+    offset: 10
+    convid: 105
+    datasize: 2
+
+  - <<: *temp
+    name: "EBLA Ruimtetemperatuur"
+    register: 0x61
+    offset: 12
+    convid: 105
+    datasize: 2
+
+  - <<: *temp
+    name: "EBLA Externe buitentemperatuur"
+    register: 0x61
+    offset: 14
+    convid: 105
+    datasize: 2
+
+  - <<: *temp
+    name: "EBLA Extra aanvoertemperatuur setpoint"
+    register: 0x62
+    offset: 3
+    convid: 105
+    datasize: 2
+
+  - <<: *temp
+    name: "EBLA Ruimtetemperatuur setpoint"
+    register: 0x62
+    offset: 5
+    convid: 105
+    datasize: 2
+
+  - <<: *altherma_base
+    name: "EBLA Waterdruk ruwe waarde"
+    register: 0x62
+    offset: 11
+    convid: 105
+    datasize: 1
+    entity_category: diagnostic
+
+  - <<: *altherma_base
+    name: "EBLA Waterpompsignaal"
+    register: 0x62
+    offset: 12
+    convid: 152
+    datasize: 1
+    unit_of_measurement: "%"
+    state_class: measurement
