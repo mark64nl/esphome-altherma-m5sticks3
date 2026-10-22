@@ -1,0 +1,374 @@
+# ============================================================
+# ESPHome Altherma - M5Stack StickS3
+# Gebaseerd op:
+#   jjohnsen/esphome-altherma
+#   slochewie/M5StickS3-ESPHome
+# ============================================================
+
+substitutions:
+  device_name: "esphome-altherma-sticks3"
+  friendly_name: "ESPHome Altherma StickS3"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+  
+  libraries:
+    - Wire
+    - m5stack/M5Unified
+    - m5stack/M5GFX
+    - m5stack/M5PM1
+
+  on_boot:
+    priority: 800
+    then:
+      - lambda: |-
+          // Initialize StickS3 PMIC
+          Wire.begin(47, 48);
+
+          m5pm1_err_t err = pm1.begin(
+            &Wire,
+            M5PM1_DEFAULT_ADDR,
+            47,
+            48,
+            M5PM1_I2C_FREQ_100K
+          );
+
+          if (err == M5PM1_OK) {
+            ESP_LOGI("pmic", "M5PM1 initialized successfully");
+          } else {
+            ESP_LOGE("pmic", "M5PM1 initialization failed: %d", err);
+          }
+
+
+      - delay: 500ms
+
+      - light.turn_on:
+          id: backlight
+          brightness: 30%
+
+      - component.update: sticks3_display
+
+
+# ============================================================
+# ESP32-S3
+# ============================================================
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+
+# ============================================================
+# PSRAM
+# ============================================================
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+
+# ============================================================
+# ESPHome basics
+# ============================================================
+
+logger:
+  level: DEBUG
+
+api:
+ custom_services: true
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "Altherma StickS3 Fallback"
+
+  use_address: 192.168.1.156
+captive_portal:
+
+
+# ============================================================
+# Altherma UART
+#
+# PAS OP:
+# GPIO17/16 uit de Core-config zijn hier bewust niet
+# blind overgenomen.
+#
+# Vul hieronder de GPIO's in waarop jouw X10A fysiek is
+# aangesloten.
+# ============================================================
+
+uart:
+  id: uart_bus
+
+  tx_pin: GPIO1
+  rx_pin: GPIO2
+
+  baud_rate: 9600
+  data_bits: 8
+  parity: EVEN
+  stop_bits: 1
+
+
+# ============================================================
+# External components
+# ============================================================
+
+external_components:
+
+  # Altherma component
+  - source:
+      type: git
+      url: https://github.com/mark64nl/esphome-altherma-m5sticks3
+      ref: main
+    components:
+      - altherma_hub
+      - sticks3_pmic
+        
+  # StickS3 display
+  - source:
+      type: git
+      url: https://github.com/slochewie/M5StickS3-ESPHome
+      ref: main
+    components:
+      - m5sticks3_display
+
+sticks3_pmic: {}
+# ============================================================
+# Altherma HUB
+# ============================================================
+
+altherma_hub:
+  id: altherma_hub_1
+
+  uart_id: uart_bus
+
+  update_interval: 30s
+
+  query_result_text_sensor: query_registry_result
+
+
+# ============================================================
+# Altherma sensor mapping
+#
+# Dit is dezelfde default mapping als de originele repo.
+# ERGA-D / EHV-EHB-EHVZ DA 04-08 kW
+# ============================================================
+
+packages:
+
+  altherma_sensors:
+    url: https://github.com/mark64nl/esphome-altherma-m5sticks3
+    ref: main
+    file: confs/ebla_edla_d_04_08.yaml
+    refresh: 1d
+
+# ============================================================
+# Backlight
+#
+# De StickS3 ESPHome implementatie gebruikt GPIO38.
+# ============================================================
+
+output:
+
+  - platform: ledc
+    pin: GPIO38
+    id: backlight_output
+    frequency: 1000Hz
+
+
+light:
+
+  - platform: monochromatic
+    output: backlight_output
+
+    name: "StickS3 Backlight"
+    id: backlight
+
+    restore_mode: ALWAYS_ON
+
+
+# ============================================================
+# Fonts
+# ============================================================
+
+font:
+
+  - file: "gfonts://Roboto"
+    id: font_small
+    size: 14
+
+  - file: "gfonts://Roboto"
+    id: font_medium
+    size: 18
+
+  - file: "gfonts://Roboto"
+    id: font_large
+    size: 28
+
+
+# ============================================================
+# Text sensors
+# ============================================================
+
+text_sensor:
+
+  # nodig voor altherma_hub
+  - platform: template
+    name: "Manual Query Registry Result"
+    id: query_registry_result
+    entity_category: diagnostic
+
+  - platform: wifi_info
+
+    ip_address:
+      name: "IP Address"
+      id: ip_addr
+
+    ssid:
+      name: "SSID"
+      id: ssid_name
+
+
+# ============================================================
+# Extra sensors
+# ============================================================
+
+sensor:
+
+  - platform: uptime
+    name: "Uptime"
+    id: uptime_s
+
+  - platform: wifi_signal
+    name: "WiFi Signal"
+    id: wifi_signal_sensor
+    update_interval: 60s
+
+
+# ============================================================
+# StickS3 buttons
+#
+# StickS3 reference config:
+# Key1 = GPIO11
+# Key2 = GPIO12
+# ============================================================
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO11
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: "StickS3 Key1"
+    id: key1
+    on_press:
+      then:
+        - lambda: |-
+            id(screen_page) = (id(screen_page) + 1) % 3;
+        - component.update: sticks3_display
+
+  - platform: gpio
+    pin:
+      number: GPIO12
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: "StickS3 Key2"
+    id: key2
+    on_press:
+      then:
+        - lambda: |-
+            id(screen_page) = (id(screen_page) + 2) % 3;
+        - component.update: sticks3_display
+
+  - platform: template
+    name: "Altherma Update Running"
+    id: altherma_updating
+    internal: true
+
+
+# ============================================================
+# StickS3 display
+# ============================================================
+
+globals:
+  - id: screen_page
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+
+    
+display:
+
+  - platform: m5sticks3_display
+    id: sticks3_display
+
+    update_interval: 1s
+
+    lambda: |-
+
+
+      it.fill(Color(0, 0, 0));
+
+      // Page title
+      if (id(screen_page) == 0) {
+        it.print(8, 6, id(font_medium),
+                 Color(255, 255, 255), "ALTHERMA");
+
+        it.print(8, 36, id(font_small),
+                 Color(255, 165, 0), "Status unknown");
+
+        it.print(8, 60, id(font_small),
+                 Color(200, 200, 200), "Waiting for data");
+
+      } else if (id(screen_page) == 1) {
+        it.print(8, 6, id(font_medium),
+                 Color(255, 255, 255), "NETWORK");
+
+        if (id(wifi_signal_sensor).has_state()) {
+          it.printf(8, 36, id(font_small),
+                    Color(0, 255, 0),
+                    "WiFi: %.0f dBm",
+                    id(wifi_signal_sensor).state);
+        }
+
+        if (id(ip_addr).has_state()) {
+          it.printf(8, 60, id(font_small),
+                    Color(200, 200, 200),
+                    "IP: %s",
+                    id(ip_addr).state.c_str());
+        }
+
+      } else {
+        it.print(8, 6, id(font_medium),
+                 Color(255, 255, 255), "DEVICE");
+
+        if (id(uptime_s).has_state()) {
+          it.printf(8, 36, id(font_small),
+                    Color(0, 255, 0),
+                    "Uptime: %.0f sec",
+                    id(uptime_s).state);
+        }
+
+        it.print(8, 60, id(font_small),
+                 Color(200, 200, 200), "Key1: next page");
+        it.print(8, 80, id(font_small),
+                 Color(200, 200, 200), "Key2: previous");
+      }
+
+      // Page indicator
+      it.printf(100, 110, id(font_small),
+                Color(100, 180, 255),
+                "%d/3", id(screen_page) + 1);
