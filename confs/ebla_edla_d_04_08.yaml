@@ -1,0 +1,106 @@
+
+# Daikin Altherma EBLA / EDLA D-series monobloc
+# Eerste sensorselectie voor EBLA06
+# Gebaseerd op de ESPAltherma EBLA-EDLA header
+
+.altherma_base: &altherma_base
+  platform: altherma_hub
+  altherma_hub_id: altherma_hub_1
+
+.temp: &temp
+  <<: *altherma_base
+  device_class: temperature
+  unit_of_measurement: "°C"
+  state_class: measurement
+  accuracy_decimals: 1
+
+sensor:
+  # Buitenluchttemperatuur
+  - <<: *temp
+    name: "EBLA Buitenluchttemperatuur"
+    register: 0x20
+    offset: 0
+    convid: 105
+    datasize: 2
+
+  # Temperatuur buitenwarmtewisselaar
+  - <<: *temp
+    name: "EBLA Warmtewisselaar"
+    register: 0x20
+    offset: 2
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  # Persgastemperatuur
+  - <<: *temp
+    name: "EBLA Persgastemperatuur"
+    register: 0x20
+    offset: 4
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  # Zuiggastemperatuur
+  - <<: *temp
+    name: "EBLA Zuiggastemperatuur"
+    register: 0x20
+    offset: 6
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  # Middentemperatuur warmtewisselaar
+  - <<: *temp
+    name: "EBLA Warmtewisselaar middentemperatuur"
+    register: 0x20
+    offset: 8
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  # Vloeistoftemperatuur
+  - <<: *temp
+    name: "EBLA Vloeistoftemperatuur"
+    register: 0x20
+    offset: 10
+    convid: 105
+    datasize: 2
+    entity_category: diagnostic
+
+  # Frequentie invertercompressor
+  - <<: *altherma_base
+    name: "EBLA Compressorfrequentie"
+    register: 0x30
+    offset: 0
+    convid: 152
+    datasize: 1
+    unit_of_measurement: "rps"
+    state_class: measurement
+
+  # Gewenste warmwatertemperatuur
+  - <<: *temp
+    name: "EBLA DHW setpoint"
+    register: 0x60
+    offset: 7
+    convid: 105
+    datasize: 2
+
+  # Gewenste aanvoertemperatuur
+  - <<: *temp
+    name: "EBLA Gewenste aanvoertemperatuur"
+    register: 0x60
+    offset: 9
+    convid: 105
+    datasize: 2
+
+  # Waterdebiet
+  - <<: *altherma_base
+    name: "EBLA Waterdebiet"
+    register: 0x62
+    offset: 9
+    convid: 105
+    datasize: 2
+    unit_of_measurement: "L/min"
+    state_class: measurement
+    accuracy_decimals: 1
