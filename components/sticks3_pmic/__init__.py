@@ -8,5 +8,5 @@ CONFIG_SCHEMA = cv.Schema({})
 
 async def to_code(config):
     cg.add_global(
-        cg.RawStatement('#include "sticks3_pmic.h"')
+        cg.RawStatement('#include "esphome/components/sticks3_pmic/sticks3_pmic.h"')
     )
